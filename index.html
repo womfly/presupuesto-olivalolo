@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generador de Presupuesto · Olivaloló</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!--
+    PASO 1 — Cargamos la librería jsPDF desde un CDN (Content Delivery Network).
+    Un CDN es un servidor externo que nos sirve el archivo .js de jsPDF.
+    Así no tenemos que descargar nada ni instalar nada: el navegador lo carga solo.
+    La librería expone un objeto global llamado "window.jspdf" que usaremos en script.js.
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- CABECERA -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-area">
+        <span class="logo-icon">◆</span>
+        <span class="logo-text">Olivaloló</span>
+      </div>
+      <p class="header-sub">Generador de presupuesto</p>
+    </div>
+  </header>
+
+  <!-- BARRA DE PROGRESO -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="main-layout">
+
+    <!-- FORMULARIO (izquierda) -->
+    <section class="form-section">
+      <form id="budgetForm" novalidate>
+
+        <!-- PASO 1: Tipo de sesión -->
+        <fieldset class="step" data-step="1">
+          <legend class="step-label"><span class="step-num">01</span> Tipo de sesión</legend>
+          <div class="radio-grid">
+            <label class="radio-card">
+              <input type="radio" name="tipoSesion" value="foto_producto" data-precio="150" required />
+              <span class="card-icon">📦</span>
+              <span class="card-title">Fotografía de producto</span>
+              <span class="card-precio">desde 150 €</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="tipoSesion" value="marca_personal" data-precio="200" />
+              <span class="card-icon">🧑‍💼</span>
+              <span class="card-title">Marca personal</span>
+              <span class="card-precio">desde 200 €</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="tipoSesion" value="redes_sociales" data-precio="180" />
+              <span class="card-icon">📱</span>
+              <span class="card-title">Redes sociales</span>
+              <span class="card-precio">desde 180 €</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="tipoSesion" value="evento" data-precio="250" />
+              <span class="card-icon">🎉</span>
+              <span class="card-title">Evento</span>
+              <span class="card-precio">desde 250 €</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="tipoSesion" value="video_promo" data-precio="350" />
+              <span class="card-icon">🎬</span>
+              <span class="card-title">Vídeo promocional</span>
+              <span class="card-precio">desde 350 €</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="tipoSesion" value="pack_foto_video" data-precio="480" />
+              <span class="card-icon">🎞️</span>
+              <span class="card-title">Pack foto + vídeo</span>
+              <span class="card-precio">desde 480 €</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- PASO 2: Duración -->
+        <fieldset class="step" data-step="2">
+          <legend class="step-label"><span class="step-num">02</span> Duración de la sesión</legend>
+          <div class="select-wrap">
+            <select name="duracion" id="duracion">
+              <option value="" data-precio="0">— Selecciona una opción —</option>
+              <option value="1h" data-precio="0">1 hora (incluido en el precio base)</option>
+              <option value="2h" data-precio="80">2 horas (+80 €)</option>
+              <option value="4h" data-precio="180">4 horas (+180 €)</option>
+              <option value="media_jornada" data-precio="280">Media jornada (+280 €)</option>
+              <option value="jornada_completa" data-precio="450">Jornada completa (+450 €)</option>
+            </select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </fieldset>
+
+        <!-- PASO 3: Tipo de contenido -->
+        <fieldset class="step" data-step="3">
+          <legend class="step-label"><span class="step-num">03</span> Tipo de contenido</legend>
+          <div class="check-list">
+            <label class="check-card">
+              <input type="checkbox" name="contenido" value="solo_foto" data-precio="0" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Solo fotografía</span>
+                <span class="check-sub">Incluido en el precio base</span>
+              </span>
+            </label>
+            <label class="check-card">
+              <input type="checkbox" name="contenido" value="solo_video" data-precio="120" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Solo vídeo</span>
+                <span class="check-sub">+120 €</span>
+              </span>
+            </label>
+            <label class="check-card">
+              <input type="checkbox" name="contenido" value="foto_video" data-precio="180" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Fotografía + vídeo</span>
+                <span class="check-sub">+180 € (mejor precio combinado)</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- PASO 4: Nivel de edición -->
+        <fieldset class="step" data-step="4">
+          <legend class="step-label"><span class="step-num">04</span> Nivel de retoque / edición</legend>
+          <div class="select-wrap">
+            <select name="edicion" id="edicion">
+              <option value="basico" data-precio="0">Básico — incluido en la sesión</option>
+              <option value="medio" data-precio="60">Medio — retoque profesional (+60 €)</option>
+              <option value="alto" data-precio="130">Alto — edición avanzada / creativa (+130 €)</option>
+            </select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </fieldset>
+
+        <!-- PASO 5: Desplazamiento -->
+        <fieldset class="step" data-step="5">
+          <legend class="step-label"><span class="step-num">05</span> Desplazamiento</legend>
+          <div class="radio-list">
+            <label class="radio-row">
+              <input type="radio" name="desplazamiento" value="sin" data-precio="0" checked />
+              <span class="radio-dot"></span>
+              <span class="radio-label">Sin desplazamiento</span>
+              <span class="radio-price">0 €</span>
+            </label>
+            <label class="radio-row">
+              <input type="radio" name="desplazamiento" value="local" data-precio="25" />
+              <span class="radio-dot"></span>
+              <span class="radio-label">Local (≤ 20 km)</span>
+              <span class="radio-price">+25 €</span>
+            </label>
+            <label class="radio-row">
+              <input type="radio" name="desplazamiento" value="provincial" data-precio="60" />
+              <span class="radio-dot"></span>
+              <span class="radio-label">Provincial</span>
+              <span class="radio-price">+60 €</span>
+            </label>
+            <label class="radio-row">
+              <input type="radio" name="desplazamiento" value="nacional" data-precio="150" />
+              <span class="radio-dot"></span>
+              <span class="radio-label">Nacional</span>
+              <span class="radio-price">+150 €</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- PASO 6: Extras -->
+        <fieldset class="step" data-step="6">
+          <legend class="step-label"><span class="step-num">06</span> Extras opcionales</legend>
+          <div class="check-list">
+            <label class="check-card">
+              <input type="checkbox" name="extras" value="fotos_adicionales" data-precio="40" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Fotos adicionales editadas</span>
+                <span class="check-sub">+40 €</span>
+              </span>
+            </label>
+            <label class="check-card">
+              <input type="checkbox" name="extras" value="entrega_urgente" data-precio="80" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Entrega urgente (24/48h)</span>
+                <span class="check-sub">+80 €</span>
+              </span>
+            </label>
+            <label class="check-card">
+              <input type="checkbox" name="extras" value="formato_redes" data-precio="35" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Formato redes sociales optimizado</span>
+                <span class="check-sub">+35 €</span>
+              </span>
+            </label>
+            <label class="check-card">
+              <input type="checkbox" name="extras" value="nocturna_exterior" data-precio="60" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Fotografía nocturna o exterior</span>
+                <span class="check-sub">+60 €</span>
+              </span>
+            </label>
+            <label class="check-card">
+              <input type="checkbox" name="extras" value="asistente" data-precio="100" />
+              <span class="check-box"></span>
+              <span class="check-info">
+                <span class="check-title">Asistente adicional</span>
+                <span class="check-sub">+100 €</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- PASO 7: Datos del cliente -->
+        <fieldset class="step" data-step="7">
+          <legend class="step-label"><span class="step-num">07</span> Tus datos (opcional)</legend>
+          <div class="input-group">
+            <label for="clienteNombre">Nombre</label>
+            <input type="text" id="clienteNombre" name="clienteNombre" placeholder="Tu nombre o empresa" />
+          </div>
+          <div class="input-group">
+            <label for="clienteEmail">Correo electrónico</label>
+            <input type="email" id="clienteEmail" name="clienteEmail" placeholder="correo@ejemplo.com" />
+          </div>
+        </fieldset>
+
+        <!-- BOTONES -->
+        <div class="form-actions">
+          <button type="button" id="btnReset" class="btn-secondary">↺ Reiniciar</button>
+          <button type="button" id="btnGenerar" class="btn-primary" disabled>
+            Generar presupuesto en PDF
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- PANEL DE RESUMEN (derecha) -->
+    <aside class="summary-panel">
+      <div class="summary-inner">
+        <h2 class="summary-title">Tu presupuesto</h2>
+
+        <div class="summary-body" id="summaryBody">
+          <p class="summary-hint">Selecciona las opciones del formulario y verás aquí el desglose en tiempo real.</p>
+        </div>
+
+        <div class="summary-total-wrap">
+          <span class="summary-total-label">Total estimado</span>
+          <span class="summary-total-amount" id="totalAmount">0 €</span>
+        </div>
+
+        <p class="summary-note">
+          Este presupuesto es orientativo y puede ajustarse tras reunión de proyecto.
+        </p>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- AVISO TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
